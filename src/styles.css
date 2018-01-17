@@ -1,0 +1,48 @@
+html, body{
+	min-height: 100%;
+	height: 100%;
+}
+
+body{
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: center;
+	align-content: center;
+}
+
+.pageName{
+	
+}
+
+.links{
+	width: 100%;
+	text-align: center;
+}
+.links a{
+	display: inline-block;
+	min-width: 150px;
+	text-decoration: none;
+	color: black;
+	background: #B79E15;
+}
+
+
+.wrapper{
+	margin-top: 20px;
+	width: 400px;
+	height: 100px;
+	position: relative;
+	overflow: hidden;
+}
+
+.imageContainer{
+	height: 100px;
+	width: auto;
+}
+
+.imageContainer img{
+	display: inline-block;
+	height: 100px;
+	transition: 1s;
+	margin-right: 10px;
+}
