@@ -6,22 +6,24 @@ var links = document.getElementsByTagName('a');
 
 
 document.addEventListener('DOMContentLoaded', function(){
-	l('uri : ', location.search)
-
-	l(decodeURIComponent(window.location.hash))
-
 	if(location.search){
-		l('?', location.search.split('?')[1])
 		var url = location.search.split('?')[1]
+		var category = url.split('&')[0]
+		var full = url.split('&')[1]
 
 		var xhr = new XMLHttpRequest()
-		xhr.open('GET', url)
-
+		xhr.open('GET', category)
 		xhr.send()
-
 		xhr.onload = function(e){
 			var images = JSON.parse(this.response)
 			showImages(images)
+		}
+
+		if(full != undefined){
+			var src = '/' + category.split('=')[0] + '/' + category.split('=')[1] + '/' + full
+			//l('src : ', src)
+			showPopUp(src, 1)
+
 		}
 	}
 });
@@ -45,7 +47,9 @@ imageContainer.addEventListener('mouseout', function(e){
 imageContainer.addEventListener('click', e => {
 	var target = e.target
 	if(target.nodeName != 'IMG') return
-	showPopUp(target)
+
+
+	showPopUp(target.getAttribute('src'))
 })
 
 
@@ -139,14 +143,26 @@ function sliderAutoSlide(){
 		},0)
 }
 
-function showPopUp(img){
-	popupImg.setAttribute('src', img.src)
+function showPopUp(imgSrc, fromCache){
+	if(!fromCache){
+		var startHref = location.href
+		var fullHref = startHref + '&' + imgSrc.split('/').reverse()[0]
+		history.pushState(null, null, fullHref);
+	}
+
+	popupImg.setAttribute('src', imgSrc)
 	popup.classList.remove('popup--hidden')
 	setTimeout(()=>{
 		popup.classList.add('popup--visible')
 	}, 100)
 
 	popup.addEventListener('click', function(e){
+		if(!fromCache){
+			history.pushState(null, null, startHref);
+		} else {
+			history.pushState(null, null, location.href.substr(0, location.href.lastIndexOf('&')));
+		}
+
 		popup.classList.remove('popup--visible')
 		setTimeout(()=>{
 			popup.classList.add('popup--hidden')
