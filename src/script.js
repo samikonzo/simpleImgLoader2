@@ -1,5 +1,7 @@
 var l = console.log
 var imageContainer = document.querySelector('.imageContainer')
+var popup = document.querySelector('.popup')
+var popupImg = popup.querySelector('.popup__img')
 var links = document.getElementsByTagName('a');
 
 
@@ -24,7 +26,31 @@ document.addEventListener('DOMContentLoaded', function(){
 	}
 });
 
-[].forEach.call(links, link => {
+imageContainer.addEventListener('mouseover', function(e){
+	var target = this
+	var relatedTarget = e.relatedTarget
+	if(target.contains(relatedTarget)) return
+
+
+
+	sliderAutoSlide.pause = true
+})
+imageContainer.addEventListener('mouseout', function(e){
+	var target = this
+	var relatedTarget = e.relatedTarget
+	if(target.contains(relatedTarget)) return
+
+	sliderAutoSlide.pause = false
+})
+imageContainer.addEventListener('click', e => {
+	var target = e.target
+	if(target.nodeName != 'IMG') return
+	showPopUp(target)
+})
+
+
+
+;[].forEach.call(links, link => {
 	link.onclick = function(e){
 		e.preventDefault()
 
@@ -91,7 +117,7 @@ function sliderAutoSlide(){
 		imageContainer.style.left = 0
 		var left = 0
 		var step = 1
-		var time = 15
+		var time = 50
 		var width = imageContainer.offsetWidth - imageContainer.parentElement.offsetWidth
 
 		sliderAutoSlide.timer = setTimeout(function f(){
@@ -111,5 +137,19 @@ function sliderAutoSlide(){
 
 			sliderAutoSlide.timer = setTimeout(f, time)
 		},0)
-	
+}
+
+function showPopUp(img){
+	popupImg.setAttribute('src', img.src)
+	popup.classList.remove('popup--hidden')
+	setTimeout(()=>{
+		popup.classList.add('popup--visible')
+	}, 100)
+
+	popup.addEventListener('click', function(e){
+		popup.classList.remove('popup--visible')
+		setTimeout(()=>{
+			popup.classList.add('popup--hidden')
+		}, 1000)
+	}, {once: true})
 }
