@@ -53,6 +53,7 @@ body{
 .imageContainer img{
 	height: 100px;
 	transition: 1s;
+	user-select: none;
 }
 
 

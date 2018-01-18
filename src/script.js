@@ -44,13 +44,55 @@ imageContainer.addEventListener('mouseout', function(e){
 
 	sliderAutoSlide.pause = false
 })
-imageContainer.addEventListener('click', e => {
+
+imageContainer.addEventListener('mousedown', e =>{
+	e.preventDefault()
 	var target = e.target
 	if(target.nodeName != 'IMG') return
+	var startX = e.clientX;
+	var startLeft = getComputedStyle(imageContainer).left.match(/-?\d+/)[0]
+	var width = imageContainer.offsetWidth - imageContainer.parentElement.offsetWidth 
+	
+	document.body.addEventListener('mousemove', dragSlider)
+	document.body.addEventListener('mousemove', moveSlider)
+	document.body.addEventListener('mouseout', bodyMouseOut, {once : true})
+	imageContainer.addEventListener('mouseup', endOfMouseDown, {once : true})
 
+	function dragSlider(e){
+		if(imageContainer.dragged) return
+		if(Math.abs(e.clientX - startX) < 3) return
+		else imageContainer.dragged = true
+	}
 
-	showPopUp(target.getAttribute('src'))
+	function moveSlider(e){
+		if(!imageContainer.dragged) return
+		var newLeft = startLeft - (startX - e.clientX)
+		newLeft 	= newLeft >= 0 ? 0 : 
+					  newLeft <= - width ? - width: newLeft
+		l('new left : ', newLeft)
+
+		imageContainer.style.left = newLeft  + 'px'
+	}
+
+	function bodyMouseOut(e){
+		l(e.relatedTarget.nodeName)
+	}
+
+	function endOfMouseDown(e){
+		document.body.removeEventListener('mousemove', dragSlider)
+		document.body.removeEventListener('mousemove', moveSlider)
+
+		if(imageContainer.dragged){
+			delete imageContainer.dragged
+			l('deleted draged')
+		} else {
+			l('sho popup')
+			showPopUp(target.getAttribute('src'))
+		}
+	}
 })
+
+
 
 
 
@@ -118,14 +160,14 @@ function sliderAutoSlide(){
 			sliderAutoSlide.direction = false
 		}
 
-		imageContainer.style.left = 0
-		var left = 0
+		/*imageContainer.style.left = 0
+		var left = 0*/
 		var step = 1
 		var time = 50
 		var width = imageContainer.offsetWidth - imageContainer.parentElement.offsetWidth
 
 		sliderAutoSlide.timer = setTimeout(function f(){
-			if(!sliderAutoSlide.pause){
+			/*if(!sliderAutoSlide.pause){
 				if(!sliderAutoSlide.direction && left > -width){
 					left -= step
 				} else if(!sliderAutoSlide.direction && left <= -width) {
@@ -137,7 +179,7 @@ function sliderAutoSlide(){
 				}
 
 				imageContainer.style.left = left + 'px'
-			}
+			}*/
 
 			sliderAutoSlide.timer = setTimeout(f, time)
 		},0)
@@ -146,7 +188,8 @@ function sliderAutoSlide(){
 function showPopUp(imgSrc, fromCache){
 	if(!fromCache){
 		var startHref = location.href
-		var fullHref = startHref + '&' + imgSrc.split('/').reverse()[0]
+		var relativeImgSrc = imgSrc.split('/').reverse()[0]
+		var fullHref = startHref + '&' + relativeImgSrc
 		history.pushState(null, null, fullHref);
 	}
 
@@ -160,7 +203,8 @@ function showPopUp(imgSrc, fromCache){
 		if(!fromCache){
 			history.pushState(null, null, startHref);
 		} else {
-			history.pushState(null, null, location.href.substr(0, location.href.lastIndexOf('&')));
+			history.pushState(null, null, location.href.split('&' + relativeImgSrc))
+			//history.pushState(null, null, location.href.substr(0, location.href.indexOf('&')));
 		}
 
 		popup.classList.remove('popup--visible')
