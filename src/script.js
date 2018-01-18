@@ -2,6 +2,7 @@ var l = console.log
 var imageContainer = document.querySelector('.imageContainer')
 var links = document.getElementsByTagName('a');
 
+
 document.addEventListener('DOMContentLoaded', function(){
 	l('uri : ', location.search)
 
@@ -57,7 +58,7 @@ function showImages(array){
 	})
 
 	setTimeout(function(){
-		array.forEach(imgLink => {
+		array.forEach((imgLink, i) => {
 			var img = document.createElement('img')
 			img.src = imgLink
 			img.style.opacity = 0;
@@ -67,8 +68,48 @@ function showImages(array){
 				imageContainer.appendChild(img)
 				setTimeout(function(){
 					img.style.opacity = 1;
+
+					if(i == array.length - 1){
+						sliderAutoSlide()
+					}
 				}, 100)
 			}, 10)
 		})
 	},1000)
+}
+
+function sliderAutoSlide(){
+	
+		if(sliderAutoSlide.timer){
+			clearTimeout(sliderAutoSlide.timer)
+		}
+
+		if(sliderAutoSlide.direction == undefined){
+			sliderAutoSlide.direction = false
+		}
+
+		imageContainer.style.left = 0
+		var left = 0
+		var step = 1
+		var time = 15
+		var width = imageContainer.offsetWidth - imageContainer.parentElement.offsetWidth
+
+		sliderAutoSlide.timer = setTimeout(function f(){
+			if(!sliderAutoSlide.pause){
+				if(!sliderAutoSlide.direction && left > -width){
+					left -= step
+				} else if(!sliderAutoSlide.direction && left <= -width) {
+					sliderAutoSlide.direction = !sliderAutoSlide.direction
+				} else if(sliderAutoSlide.direction && left < 0){
+					left += step
+				} else if(sliderAutoSlide.direction && left >= 0){
+					sliderAutoSlide.direction = !sliderAutoSlide.direction
+				}
+
+				imageContainer.style.left = left + 'px'
+			}
+
+			sliderAutoSlide.timer = setTimeout(f, time)
+		},0)
+	
 }

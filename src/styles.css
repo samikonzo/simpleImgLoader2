@@ -29,20 +29,29 @@ body{
 
 .wrapper{
 	margin-top: 20px;
-	width: 400px;
+	width: 500px;
 	height: 100px;
 	position: relative;
 	overflow: hidden;
+	border: 1px solid;
 }
 
 .imageContainer{
+	position: absolute;
+	left: 0;
+	top: 0;
 	height: 100px;
 	width: auto;
+	display: flex;
+	flex-flow: row nowrap;
+
+	transition-timing-function: linear;
 }
 
 .imageContainer img{
-	display: inline-block;
 	height: 100px;
 	transition: 1s;
-	margin-right: 10px;
 }
+
+
+
