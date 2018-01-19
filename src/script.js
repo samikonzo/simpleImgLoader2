@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function(){
 	if(location.search){
 		var url = location.search.split('?')[1]
 		var category = url.split('&')[0]
-		var full = url.split('&')[1]
+		var fullSize = url.split('&')[1]
 
 		var xhr = new XMLHttpRequest()
 		xhr.open('GET', category)
@@ -19,31 +19,13 @@ document.addEventListener('DOMContentLoaded', function(){
 			showImages(images)
 		}
 
-		if(full != undefined){
-			var src = '/' + category.split('=')[0] + '/' + category.split('=')[1] + '/' + full
+		if(fullSize != undefined){
+			var src = '/' + category.split('=')[0] + '/' + category.split('=')[1] + '/' + fullSize
 			//l('src : ', src)
 			showPopUp(src, 1)
-
 		}
 	}
 });
-
-imageContainer.addEventListener('mouseover', function(e){
-	var target = this
-	var relatedTarget = e.relatedTarget
-	if(target.contains(relatedTarget)) return
-
-
-
-	sliderAutoSlide.pause = true
-})
-imageContainer.addEventListener('mouseout', function(e){
-	var target = this
-	var relatedTarget = e.relatedTarget
-	if(target.contains(relatedTarget)) return
-
-	sliderAutoSlide.pause = false
-})
 
 imageContainer.addEventListener('mousedown', e =>{
 	e.preventDefault()
@@ -56,39 +38,46 @@ imageContainer.addEventListener('mousedown', e =>{
 	document.body.addEventListener('mousemove', dragSlider)
 	document.body.addEventListener('mousemove', moveSlider)
 	document.body.addEventListener('mouseout', bodyMouseOut, {once : true})
-	imageContainer.addEventListener('mouseup', endOfMouseDown, {once : true})
+	document.body.addEventListener('mouseup', endOfMouseDown, {once : true})
 
 	function dragSlider(e){
 		if(imageContainer.dragged) return
 		if(Math.abs(e.clientX - startX) < 3) return
-		else imageContainer.dragged = true
+		
+		imageContainer.dragged = true
+
+		sliderAutoSlide.pause = true
 	}
 
 	function moveSlider(e){
 		if(!imageContainer.dragged) return
+
 		var newLeft = startLeft - (startX - e.clientX)
 		newLeft 	= newLeft >= 0 ? 0 : 
 					  newLeft <= - width ? - width: newLeft
-		l('new left : ', newLeft)
+		//l('new left : ', newLeft)
 
 		imageContainer.style.left = newLeft  + 'px'
 	}
 
 	function bodyMouseOut(e){
-		l(e.relatedTarget.nodeName)
+		//l(e.relatedTarget.nodeName)
+		//endOfMouseDown(e)
 	}
 
 	function endOfMouseDown(e){
 		document.body.removeEventListener('mousemove', dragSlider)
 		document.body.removeEventListener('mousemove', moveSlider)
+		document.body.removeEventListener('mouseout', bodyMouseOut)
+		document.body.removeEventListener('mouseup', endOfMouseDown)
 
 		if(imageContainer.dragged){
 			delete imageContainer.dragged
-			l('deleted draged')
+			sliderAutoSlide.pause = false
 		} else {
-			l('sho popup')
 			showPopUp(target.getAttribute('src'))
 		}
+
 	}
 })
 
@@ -116,6 +105,7 @@ imageContainer.addEventListener('mousedown', e =>{
 			var images = JSON.parse(this.response)
 			showImages(images)
 		}
+
 		history.pushState(null, null, '?' + url);
 	}
 })
@@ -160,36 +150,43 @@ function sliderAutoSlide(){
 			sliderAutoSlide.direction = false
 		}
 
-		/*imageContainer.style.left = 0
-		var left = 0*/
+		imageContainer.style.left = 0
 		var step = 1
 		var time = 50
 		var width = imageContainer.offsetWidth - imageContainer.parentElement.offsetWidth
 
 		sliderAutoSlide.timer = setTimeout(function f(){
-			/*if(!sliderAutoSlide.pause){
-				if(!sliderAutoSlide.direction && left > -width){
-					left -= step
-				} else if(!sliderAutoSlide.direction && left <= -width) {
-					sliderAutoSlide.direction = !sliderAutoSlide.direction
-				} else if(sliderAutoSlide.direction && left < 0){
-					left += step
-				} else if(sliderAutoSlide.direction && left >= 0){
-					sliderAutoSlide.direction = !sliderAutoSlide.direction
+			var currentLeft = imageContainer.style.left.match(/\-?\d+/)
+			var direction = sliderAutoSlide.direction
+
+			if(!sliderAutoSlide.pause){
+				if(!direction && currentLeft >= -width){
+					if(currentLeft - step <= -width){
+						currentLeft = -width
+						sliderAutoSlide.direction = !sliderAutoSlide.direction
+					} else {
+						currentLeft = +currentLeft - step
+					}
+				} else if(direction && currentLeft <= 0){
+					if(currentLeft + step >= 0){
+						currentLeft = 0
+						sliderAutoSlide.direction = !sliderAutoSlide.direction
+					} else {
+						currentLeft = +currentLeft + step
+					}
 				}
+			}
 
-				imageContainer.style.left = left + 'px'
-			}*/
-
+			imageContainer.style.left = currentLeft + 'px'
 			sliderAutoSlide.timer = setTimeout(f, time)
 		},0)
 }
 
 function showPopUp(imgSrc, fromCache){
+	var startHref = location.href
+	var relativeImgSrc = imgSrc.split('/').reverse()[0]
+	var fullHref = startHref + '&' + relativeImgSrc
 	if(!fromCache){
-		var startHref = location.href
-		var relativeImgSrc = imgSrc.split('/').reverse()[0]
-		var fullHref = startHref + '&' + relativeImgSrc
 		history.pushState(null, null, fullHref);
 	}
 
@@ -203,7 +200,10 @@ function showPopUp(imgSrc, fromCache){
 		if(!fromCache){
 			history.pushState(null, null, startHref);
 		} else {
-			history.pushState(null, null, location.href.split('&' + relativeImgSrc))
+			l('from cache')
+			l('&' + relativeImgSrc)
+			l(location.href.split('&' + relativeImgSrc)[0])
+			history.pushState(null, null, location.href.split('&' + relativeImgSrc)[0])
 			//history.pushState(null, null, location.href.substr(0, location.href.indexOf('&')));
 		}
 
